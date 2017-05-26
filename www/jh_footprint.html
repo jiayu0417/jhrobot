@@ -1,0 +1,175 @@
+<!doctype html>
+<!--[if lt IE 7]> <html class="ie6 oldie"> <![endif]-->
+<!--[if IE 7]>    <html class="ie7 oldie"> <![endif]-->
+<!--[if IE 8]>    <html class="ie8 oldie"> <![endif]-->
+<!--[if gt IE 8]><!-->
+<html class="">
+<!--<![endif]-->
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>惊鸿机器人足迹地图</title>
+<script src="public/jquery-1.11.3.min.js" type="text/javascript"></script>
+<script src="public/main.js" type="text/javascript"></script>
+<link href="public/boilerplate.css" rel="stylesheet" type="text/css">
+<link href="public/main.css" rel="stylesheet" type="text/css">
+<!--[if lt IE 9]>
+<script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+<![endif]-->
+<script src="public/respond.min.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){
+	var timeId = setInterval("flushdesk();",200);
+	initFootprint();
+	drawFootprint("demoCanvas");
+});
+function flushdesk(){
+	document.getElementById("labTime").innerHTML=getCurrTime();
+	drawFootprint("demoCanvas");
+	funGetCurr();
+	drawRobot("demoCanvas");
+	
+}
+//返回num保留n位小数的值
+function getResult(num,n){
+	return Math.round(num*Math.pow(10,n))/Math.pow(10,n);
+}
+//***********************************************
+//定义一个足迹数组
+var arrfootprint=new Array();
+var currPosition={x:10,y:2,th:0};	//机器人当前位置
+var conScare=0.05;	//每像素的米数
+var fpSizes={Xmin:0,Xmax:10,Ymin:0,Ymax:10}; //足迹的坐标最大最小值
+//添加一个足迹,参数为坐标\角度
+function addFootprint(x,y,th){
+	var conSteps=3000;	//设定缓存步数
+	var conLenMin=0.2;	//设定最小步距
+	var conThMin=0.2;	//设定最小旋转角
+	var fpl=arrfootprint.length;	//获取步数
+	if(fpl>0){
+		var oldX = arrfootprint[fpl-1].x;
+		var oldY = arrfootprint[fpl-1].y;
+		var oldTh= arrfootprint[fpl-1].th;
+		oldX -=x;oldY -=y;
+		var l1=Math.sqrt(oldX * oldX + oldY * oldY);
+		oldTh -=th;
+		if(Math.abs(oldTh)<conThMin && l1<conLenMin)return;	//步距太小不保存
+	}
+	arrfootprint.push({x:x,y:y,th:th});
+	if(fpl>conSteps) arrfootprint.splice(0,1);	//如果步数超过缓存值则删除第一个
+}
+//清空足迹
+function clearFootprint(){
+	var iSize=arrfootprint.length;
+	if(iSize<=0)return;
+	arrfootprint.splice(0,iSize);
+}
+//初始化足迹
+function initFootprint(){
+	clearFootprint();
+}
+//机器人坐标旋转\平移变换
+function zbRound(obj){
+	var r=Math.sqrt(obj.x*obj.x+obj.y*obj.y);
+	var th=Math.atan2(obj.y,obj.x);
+	th +=currPosition.th-Math.PI/2;
+	var iX=r*Math.cos(th)+currPosition.x;
+	var iY=r*Math.sin(th)+currPosition.y;
+	var retObj={x:iX,y:iY};
+	return retObj;
+}
+//机器人位置转换为像素点
+function zhPosToXs(obj,height1){
+	var x = (obj.x-fpSizes.Xmin) /conScare+5; 
+	var y = height1- (obj.y-fpSizes.Ymin)/conScare-5;
+	return {x:x,y:y};
+}
+//指定位置画一个机器人
+function drawRobot(objId){
+	//获取画布
+	var canvasDom = document.getElementById(objId);
+	var context = canvasDom.getContext('2d');
+	var p;
+	context.beginPath();
+	p = zbRound({x:0,y:0.4}); p =zhPosToXs(p,canvasDom.height);context.moveTo(p.x,p.y);
+	p = zbRound({x:0.3,y:0.2});p =zhPosToXs(p,canvasDom.height);context.lineTo(p.x,p.y);
+	p = zbRound({x:0.3,y:-0.3});p =zhPosToXs(p,canvasDom.height);context.lineTo(p.x,p.y);
+	p = zbRound({x:-0.3,y:-0.3});p =zhPosToXs(p,canvasDom.height);context.lineTo(p.x,p.y);
+	p = zbRound({x:-0.3,y:0.2});p =zhPosToXs(p,canvasDom.height);context.lineTo(p.x,p.y);
+	context.closePath();
+	context.lineWidth = 2.0; // 设置线宽
+        context.strokeStyle = "#CC0000"; // 设置线的颜色
+        context.stroke(); // 进行线的着色，这时整条线才变得可见
+}
+//画足迹 参数为画布的ID号
+function drawFootprint(objId){
+	//获取画布
+	var canvasDom = document.getElementById(objId);
+	var fpl=arrfootprint.length;
+	//alert(fpl);
+	for(i=0;i<fpl;i++){
+		if(fpSizes.Xmin > arrfootprint[i].x)fpSizes.Xmin = arrfootprint[i].x;
+		if(fpSizes.Xmax < arrfootprint[i].x)fpSizes.Xmax = arrfootprint[i].x;
+		if(fpSizes.Ymin > arrfootprint[i].y)fpSizes.Ymin = arrfootprint[i].y;
+		if(fpSizes.Ymax < arrfootprint[i].y)fpSizes.Ymax = arrfootprint[i].y;
+	}
+	//设置画布宽高
+	var canWidth =(fpSizes.Xmax-fpSizes.Xmin)/conScare+10;
+	var canHeight=(fpSizes.Ymax-fpSizes.Ymin)/conScare+10;
+	if(canWidth<300)canWidth=300;
+	if(canHeight<300)canHeight=300;
+	canvasDom.width = canWidth;
+	canvasDom.height = canHeight;
+	var context = canvasDom.getContext('2d');
+	context.clearRect(0,0,canvasDom.width,canvasDom.height);
+	context.strokeStyle = "red";//指定绘制线样式、颜色*/
+	for(i=0;i<fpl;i++){
+		var p =zhPosToXs(arrfootprint[i],canvasDom.height);
+		context.lineTo(p.x,p.y);
+	}
+	context.stroke();
+}
+//获取一个位置
+//获取机器人实时运行信息
+function funGetCurr(){
+	$.post(
+		"jybot.php",
+		{type:8},
+		function(data,status){
+	 		if(status=='success'){
+				//alert(data.lx.constructor + " " + data.ly.constructor + data.lth.constructor);
+				if(data.lx.constructor==Number && data.ly.constructor==Number && data.lth.constructor==Number){
+					currPosition.x=data.lx;currPosition.y=data.ly;currPosition.th=data.lth;
+					addFootprint(currPosition.x,currPosition.y,currPosition.th);
+					document.getElementById("labPos").innerHTML=" X:"+getResult(data.lx,3) + " Y:"+getResult(data.ly,3)+ " th:"+getResult(data.lth*180 /Math.PI,1);
+				}
+			}
+		},
+		'json'
+	);
+}
+//***********************************************
+
+</script>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+</head>
+<body>
+<div class="gridContainer">
+<div id="header">
+		<image src = "public/logo.png"  width="90" height="90" />&nbsp;&nbsp;
+		<label id="labTime"></label>
+</div>
+<div id ="nav">
+	<label>当前坐标:</label><label id="labPos"></label>
+</div>
+<div id ="content">
+	<canvas id="demoCanvas" width="300" height="300"">
+		<p>爷，你还在上个世纪吧，现在都html5了，您还在ie6时代？</p>
+	</canvas> 
+</div>
+<div id="footer">
+&copy;2012-2022 lilaiying.cn. All Rights Reserved &nbsp;&nbsp;<br>版权所有<br>豫ICP备13006484号<br>
+</div>
+</div>
+</body>
+</html>

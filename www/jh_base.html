@@ -1,0 +1,166 @@
+<!doctype html>
+<!--[if lt IE 7]> <html class="ie6 oldie"> <![endif]-->
+<!--[if IE 7]>    <html class="ie7 oldie"> <![endif]-->
+<!--[if IE 8]>    <html class="ie8 oldie"> <![endif]-->
+<!--[if gt IE 8]><!-->
+<html class="">
+<!--<![endif]-->
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>惊鸿机器人底盘测试</title>
+<script src="public/jquery-1.11.3.min.js" type="text/javascript"></script>
+<script src="public/main.js" type="text/javascript"></script>
+<link href="public/boilerplate.css" rel="stylesheet" type="text/css">
+<link href="public/main.css" rel="stylesheet" type="text/css">
+<!--[if lt IE 9]>
+<script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+<![endif]-->
+<script src="public/respond.min.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){
+	funGetConf();
+	var timeId = setInterval("flushdesk();",1000); 
+});
+function flushdesk(){
+	document.getElementById("labTime").innerHTML=getCurrTime();
+	funGetCurr();
+}
+//获取机器人配置信息
+function funGetConf(){
+	//{"jh_bml_conf":{"pb": "0", "pa": "37", "mode": "3"},"jh_bmr_conf":{"pb": "0", "pa": "40", "mode": "3"},"jh_bml_val":{"mileage": "6", "speed": "0.0"},"jh_bmr_val":{"mileage": "44", "speed": "0.0"}}
+	$.post(
+		"jybot.php",
+		{type:5},
+		function(data,status){
+	 		if(status=='success'){
+				document.getElementById("labMotoLA").innerHTML = data.jh_motol_conf.pa;
+				document.getElementById("labMotoLB").innerHTML = data.jh_motol_conf.pb;
+				document.getElementById("labMotoLPwm").innerHTML = data.jh_motol_conf.pwm;
+				document.getElementById("labMotoRA").innerHTML = data.jh_motor_conf.pa;
+				document.getElementById("labMotoRB").innerHTML = data.jh_motor_conf.pb;
+				document.getElementById("labMotoRPwm").innerHTML = data.jh_motor_conf.pwm;
+				document.getElementById("labLM").innerHTML = data.jh_bml_conf.mode;
+				document.getElementById("labLA").innerHTML = data.jh_bml_conf.pa;
+				document.getElementById("labLB").innerHTML = data.jh_bml_conf.pb;
+				document.getElementById("labRM").innerHTML = data.jh_bmr_conf.mode;
+				document.getElementById("labRA").innerHTML = data.jh_bmr_conf.pa;
+				document.getElementById("labRB").innerHTML = data.jh_bmr_conf.pb;
+				document.getElementById("wheelspacing").innerHTML = data.jh_bot_conf.wheelspacing;
+				document.getElementById("unitdistance").innerHTML = data.jh_bot_conf.unitdistance;
+				document.getElementById("acc_lim_th").innerHTML = data.jh_bot_conf.acc_lim_th;
+				document.getElementById("acc_lim_x").innerHTML = data.jh_bot_conf.acc_lim_x;
+				document.getElementById("max_vel_x").innerHTML = data.jh_bot_conf.max_vel_x;
+				document.getElementById("min_vel_x").innerHTML = data.jh_bot_conf.min_vel_x;
+				document.getElementById("max_rotation_vel").innerHTML = data.jh_bot_conf.max_rotation_vel;
+				document.getElementById("min_inplace_vel").innerHTML = data.jh_bot_conf.min_inplace_vel;
+				document.getElementById("escape_vel").innerHTML = data.jh_bot_conf.escape_vel;
+				document.getElementById("xy_goal_tolerance").innerHTML = data.jh_bot_conf.xy_goal_tolerance;
+				document.getElementById("yaw_goal_tolerance").innerHTML = data.jh_bot_conf.yaw_goal_tolerance;
+			}
+		},
+		'json'
+	);
+}
+//获取机器人实时运行信息
+function funGetCurr(){
+	$.post(
+		"jybot.php",
+		{type:4},
+		function(data,status){
+	 		if(status=='success'){
+				document.getElementById("labLP").innerHTML = data.jh_bml_val.mileage;
+				document.getElementById("labLS").innerHTML = data.jh_bml_val.speed;
+				document.getElementById("labRP").innerHTML = data.jh_bmr_val.mileage;
+				document.getElementById("labRS").innerHTML = data.jh_bmr_val.speed;
+			}
+		},
+		'json'
+	);
+}
+//设置机器人运行速度
+function funSetSpeed(){
+	$speedl=document.getElementById("txtSline").value;
+	$speeda=document.getElementById("txtSth").value;
+	$.post(
+		"jybot.php",
+		{type:7,speedl:$speedl,speeda:$speeda},
+		function(data,status){
+	 		if(status=='success'){
+				alert("OK");
+			}
+		},
+		'json'
+	);
+}
+//设在机器人当前位置
+function funSetPos(){
+	$posX=document.getElementById("txtSetX").value;
+	$posY=document.getElementById("txtSetY").value;
+	$posTh=document.getElementById("txtSetTh").value;
+	$posTh = $posTh *  Math.PI/180;	//转换为弧度
+	$.post(
+		"jybot.php",
+		{type:9,x:$posX,y:$posY,th:$posTh},
+		function(data,status){
+	 		if(status=='success'){
+				alert("OK");
+			}
+		},
+		'json'
+	);
+}
+</script>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+</head>
+<body>
+<div class="gridContainer">
+<div id="header">
+		<image src = "public/logo.png"  width="90" height="90" />&nbsp;&nbsp;
+		<label id="labTime"></label>
+</div>
+<div id ="nav">
+
+</div>
+<div id ="content">
+	<label>左驱动 A:</label><label id="labMotoLA"></label>
+	<label> B:</label><label id="labMotoLB"></label>
+	<label> PWM:</label><label id="labMotoLPwm"></label><br />
+	<label>右驱动 A:</label><label id="labMotoRA"></label>
+	<label> B:</label><label id="labMotoRB"></label>
+	<label> PWM:</label><label id="labMotoRPwm"></label><br />
+	<label>左编码 mode:</label><label id="labLM"></label>
+	<label> A:</label><label id="labLA"></label>
+	<label> B:</label><label id="labLB"></label>
+	<label> 位置:</label><label id="labLP"></label>
+	<label> 速度:</label><label id="labLS"></label><br />
+	<label>右编码 mode:</label><label id="labRM"></label>
+	<label> A:</label><label id="labRA"></label>
+	<label> B:</label><label id="labRB"></label>
+	<label> 位置:</label><label id="labRP"></label>
+	<label> 速度:</label><label id="labRS"></label><br />
+	<label>机器人配置</label><br />
+	<label>轮间距离:</label><label id="wheelspacing"></label>
+	<label>脉冲米数:</label><label id="unitdistance"></label><br />
+	<label>加速度限制 th:</label><label id="acc_lim_th"></label> x:<label id="acc_lim_x"></label>
+	<label>速度限制 max:</label><label id="max_vel_x"></label> min:<label id="min_vel_x"></label><br />
+	<label>旋转速度 </label><label id="max_rotation_vel"></label>
+	<label>原地旋转速度 </label><label id="min_inplace_vel"></label><br />
+	<label>机器人卡住时的退出速度 </label><label id="escape_vel"></label><br />
+	<label>前进到达目标容差 </label><label id="xy_goal_tolerance"></label>
+	<label>左右方向目标容差 </label><label id="yaw_goal_tolerance"></label><br />
+	
+	<label>线速度:</label><input type="text"  id="txtSline" value=0.4 size="6" />
+    	<label>角速度:</label><input type="text"  id="txtSth" value=0.4 size="6" />
+	<input type="submit" id="cmdSpeed" value="提交" onClick="funSetSpeed()" /><br />
+	<label>X:</label><input type="text"  id="txtSetX" value=0.4 size="4" />
+    	<label>Y:</label><input type="text"  id="txtSetY" value=0.4 size="4" />
+	<label>theta:</label><input type="text"  id="txtSetTh" value=0.4 size="4" />
+	<input type="submit" id="cmdSpeed" value="设置位置" onClick="funSetPos()" /><br />
+</div>
+<div id="footer">
+&copy;2012-2022 lilaiying.cn. All Rights Reserved &nbsp;&nbsp;<br>版权所有<br>豫ICP备13006484号<br>
+</div>
+</div>
+</body>
+</html>

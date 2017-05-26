@@ -1,0 +1,85 @@
+<!doctype html>
+<!--[if lt IE 7]> <html class="ie6 oldie"> <![endif]-->
+<!--[if IE 7]>    <html class="ie7 oldie"> <![endif]-->
+<!--[if IE 8]>    <html class="ie8 oldie"> <![endif]-->
+<!--[if gt IE 8]><!-->
+<html class="">
+<!--<![endif]-->
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>加法测试</title>
+<script src="public/jquery-1.11.3.min.js" type="text/javascript"></script>
+<script src="public/main.js" type="text/javascript"></script>
+<link href="public/boilerplate.css" rel="stylesheet" type="text/css">
+<link href="public/main.css" rel="stylesheet" type="text/css">
+<!--[if lt IE 9]>
+<script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+<![endif]-->
+<script src="public/respond.min.js"></script>
+<script type="text/javascript">
+﻿$(document).ready(function(){
+	var timeId = setInterval("flushdesk();",1000); 
+});
+function flushdesk(){
+	document.getElementById("labTime").innerHTML=getCurrTime();
+}
+function funYS(obj){
+	//parseInt() 和 parseFloat()
+	//alert(obj.id);
+	if(obj.id=="cmdadd"){
+		var add1=document.getElementById("txtadd1").value
+		var add2=document.getElementById("txtadd2").value;
+		//var add3 = parseFloat(add1) + parseFloat(add2);
+		//document.getElementById("txtadd3").value= add3;
+		funPostAdd(parseFloat(add1),parseFloat(add2));		//
+	}
+	
+	if(obj.id=="cmdsub"){
+		var sub1=document.getElementById("txtsub1").value
+		var sub2=document.getElementById("txtsub2").value;
+		var sub3 = parseFloat(sub1) - parseFloat(sub2);
+		document.getElementById("txtsub3").value= sub3.toString();
+		}
+}
+function funPostAdd(datn1,datn2){
+	$.post(
+		"jy.php",
+		{type:2,dat1:datn1,dat2:datn2},
+		function(data,status){
+	 		if(status=='success'){
+				var ret =parseFloat(data);
+				document.getElementById("txtadd3").value= ret;
+			}
+		},
+		'html'
+	);
+}
+</script>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+</head>
+<body>
+<div class="gridContainer">
+<div id="header">
+		<image src = "public/logo.png"  width="90" height="90" />&nbsp;&nbsp;
+		<label id="labTime"></label>
+</div>
+<div id ="nav">
+<a href="index.html"> 首页 </a>
+</div>
+<div id ="content">
+	<input type="text" id="txtadd1"  value=13 size="10" /> + 
+    <input type="text"  id="txtadd2" value=14 size="10" /> = 
+    <input type="text"  id="txtadd3" size="10" />
+	<input type="submit" id="cmdadd" value="提交" onClick="funYS(this)" /><br />
+    <input type="text" id="txtsub1"  value=13 size="10" /> - 
+    <input type="text"  id="txtsub2" value=14 size="10" /> =  
+    <input type="text"  id="txtsub3" size="10" />
+	<input type="submit" id="cmdsub" value="提交" onClick="funYS(this)" /><br />
+</div>
+<div id="footer">
+&copy;2012-2022 lilaiying.cn. All Rights Reserved &nbsp;&nbsp;<br>版权所有<br>豫ICP备13006484号<br>
+</div>
+</div>
+</body>
+</html>

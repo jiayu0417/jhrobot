@@ -1,0 +1,174 @@
+<!doctype html>
+<!--[if lt IE 7]> <html class="ie6 oldie"> <![endif]-->
+<!--[if IE 7]>    <html class="ie7 oldie"> <![endif]-->
+<!--[if IE 8]>    <html class="ie8 oldie"> <![endif]-->
+<!--[if gt IE 8]><!-->
+<html class="">
+<!--<![endif]-->
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>惊鸿机器人足迹地图</title>
+<script src="public/jquery-1.11.3.min.js" type="text/javascript"></script>
+<script src="public/main.js" type="text/javascript"></script>
+<link href="public/boilerplate.css" rel="stylesheet" type="text/css">
+<link href="public/main.css" rel="stylesheet" type="text/css">
+<!--[if lt IE 9]>
+<script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+<![endif]-->
+<script src="public/respond.min.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){
+	var timeId = setInterval("flushdesk();",1000);
+	drawMap();
+	funCanvas();
+});
+function flushdesk(){
+	document.getElementById("labTime").innerHTML=getCurrTime();
+	//funGetCurr();
+}
+//获取机器人实时运行信息
+function funGetCurr(){
+	$.post(
+		"jybot.php",
+		{type:5},
+		function(data,status){
+	 		if(status=='success'){
+
+			}
+		},
+		'json'
+	);
+}
+function drawMap(){
+	//第一步：获取canvas元素
+	var canvasDom = document.getElementById("demoCanvas");
+	//第二步：获取上下文
+	var context = canvasDom.getContext('2d');
+	//第三步：指定绘制线样式、颜色
+        context.strokeStyle = "red";
+        //第四步：绘制矩形，只有线。内容是空的
+        context.strokeRect(10, 10, 190, 100);
+	//1以下演示填充矩形。
+        context.fillStyle = "blue";
+        context.fillRect(110,110,100,100);
+	//2演示画封闭图形
+	
+	//2绘制文本
+	context.moveTo(200,200);
+        // 设置字体
+        context.font = "Bold 50px Arial";
+        // 设置对齐方式
+        context.textAlign = "left";
+        // 设置填充颜色
+        context.fillStyle = "#005600";
+        // 设置字体内容，以及在画布上的位置
+        context.fillText("老马!", 10, 50);
+        // 绘制空心字
+        context.strokeText("blog.itjeek.com!", 10, 100);
+	//3 绘制以 （60,60）为圆心，50为半径长度，从0度到360度（PI是180度），最后一个参数代表顺时针旋转。
+	context.beginPath();//开始绘制路径
+        context.arc(60, 60, 50, 0, Math.PI * 2, true);
+        context.lineWidth = 2.0;//线的宽度
+        context.strokeStyle = "#000";//线的样式
+        context.stroke();//绘制空心的，当然如果使用fill那就是填充了。
+	drawRobot({x:400,y:500});
+	//4.绘制图片
+        var image = new Image();//创建一张图片
+        image.src = "public/logo.png";//设置图片的路径
+        image.onload = function() {//当图片加载完成后
+            for (var i = 0; i < 10; i++) {//输出10张照片
+                //参数：（1）绘制的图片  （2）坐标x，（3）坐标y
+                context.drawImage(image, 5 + i * 30, 250 + i * 10);
+            }
+        };
+}
+function funMove(obj){
+	alert(obj.id);
+
+}
+function funCanvas(){
+	canvas = document.getElementById('demoCanvas');
+	canvas .addEventListener('click', function(e){
+		p = getEventPosition(e);
+		//alert(p.x+ "  " + p.y);
+		drawRobot(p);
+  		//当click时运行
+	}, false);
+}
+function drawRobot(p){	//在P位置画一个机器人
+	var canvasDom = document.getElementById("demoCanvas");
+	//第二步：获取上下文
+	var context = canvasDom.getContext('2d');
+	//context.beginPath(); // 开始路径绘制
+        //context.moveTo(20, 20); // 设置路径起点，坐标为(20,20)
+        //context.lineTo(200, 200); // 绘制一条到(200,20)的直线
+        //context.lineTo(400, 20);
+        //context.closePath();
+        //context.lineWidth = 2.0; // 设置线宽
+        //context.strokeStyle = "#CC0000"; // 设置线的颜色
+        //context.stroke(); // 进行线的着色，这时整条线才变得可见
+	//alert(p.x + "  " + p.y);
+
+	//context.beginPath();
+	context.moveTo(p.x,p.y-10);
+	context.lineTo(p.x-10,p.y-5);
+	context.lineTo(p.x-10,p.y+5);
+	context.lineTo(p.x+10,p.y+5);
+	context.lineTo(p.x+10,p.y-5);
+	context.closePath();
+	context.lineWidth = 2.0; // 设置线宽
+        context.strokeStyle = "#CC0000"; // 设置线的颜色
+        context.stroke(); // 进行线的着色，这时整条线才变得可见
+}
+function getEventPosition(ev){
+  var x, y;
+  if (ev.layerX || ev.layerX == 0) {
+    x = ev.layerX;
+    y = ev.layerY;
+  } else if (ev.offsetX || ev.offsetX == 0) { // Opera
+    x = ev.offsetX;
+    y = ev.offsetY;
+  }
+  return {x: x, y: y};
+}
+
+
+
+
+
+
+</script>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+</head>
+<body>
+<div class="gridContainer">
+<div id="header">
+		<image src = "public/logo.png"  width="90" height="90" />&nbsp;&nbsp;
+		<label id="labTime"></label>
+</div>
+<div id ="nav">
+
+</div>
+<div id ="content">
+	<table>
+	<tr><td><input type="submit" id="cmdmove1" value="左上" onClick="funMove(this)" /></td>
+	<td><input type="submit" id="cmdmove2" value="上" onClick="funMove(this)" /></td>
+	<td><input type="submit" id="cmdmove3" value="右上" onClick="funMove(this)" /></td></tr>
+	<tr><td><input type="submit" id="cmdmove4" value="左" onClick="funMove(this)" /></td>
+	<td><input type="submit" id="cmdmove5" value="中" onClick="funMove(this)" /></td>
+	<td><input type="submit" id="cmdmove6" value="右" onClick="funMove(this)" /></td></tr>
+	<tr><td><input type="submit" id="cmdmove7" value="左下" onClick="funMove(this)" /></td>
+	<td><input type="submit" id="cmdmove8" value="下" onClick="funMove(this)" /></td>
+	<td><input type="submit" id="cmdmove9" value="右下" onClick="funMove(this)" /></td></tr>
+	</table>
+	<canvas id="demoCanvas" width="700" height="480"">
+		<p>爷，你还在上个世纪吧，现在都html5了，您还在ie6时代？</p>
+	</canvas> 
+</div>
+<div id="footer">
+&copy;2012-2022 lilaiying.cn. All Rights Reserved &nbsp;&nbsp;<br>版权所有<br>豫ICP备13006484号<br>
+</div>
+</div>
+</body>
+</html>
